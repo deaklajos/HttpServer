@@ -2,6 +2,7 @@
 
 #include "Server.h"
 #include "ResponseWorker.h"
+#include "Logger.h"
 
 Server::Server(QObject *parent) :
     QTcpServer(parent)
@@ -15,16 +16,20 @@ void Server::startServer()
     const qint16 port = 1234;
     if(this->listen(QHostAddress::Any, port))
     {
-        qDebug() << "Server started";
+
+        QString addressString;
         const QHostAddress &localhost = QHostAddress(QHostAddress::LocalHost);
         for (const QHostAddress &address: QNetworkInterface::allAddresses()) {
             if (address.protocol() == QAbstractSocket::IPv4Protocol && address != localhost)
-                 qDebug() << address.toString() + ":" + QString::number(port);
+                 addressString += ("," + address.toString() + ":" + QString::number(port));
         }
+
+        addressString.remove(0, 1);
+        Logger::getInstance().Log(QtMsgType::QtInfoMsg, "Server started started " + addressString);
     }
     else
     {
-        qDebug() << "Server did not start!";
+        Logger::getInstance().Log(QtMsgType::QtFatalMsg, "Server could not be started. Reason : " + this->errorString());
     }
 }
 
@@ -42,5 +47,4 @@ void Server::incomingConnection(qintptr handle)
     task->socketDescriptor = handle;
 
     pool->start(task);
-    qDebug() << "pool started";
 }

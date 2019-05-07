@@ -1,7 +1,9 @@
 #include <QFile>
+#include <QHostAddress>
 
 #include "ResponseWorker.h"
 #include "HttpResponse.h"
+#include "Logger.h"
 
 ResponseWorker::ResponseWorker()
 {
@@ -13,6 +15,10 @@ void ResponseWorker::run()
 
     QTcpSocket socket;
     socket.setSocketDescriptor(socketDescriptor);
+    QString address = socket.peerAddress().toString();
+    QString port = QString::number(socket.peerPort());
+    Logger::getInstance().Log(QtMsgType::QtInfoMsg, "Connected to " + address + ":" + port);
+
     if(socket.waitForReadyRead(500))
     {
         auto response = HttpResponse::fromRequest(socket.readAll());
@@ -22,4 +28,6 @@ void ResponseWorker::run()
         socket.waitForBytesWritten();
     }
     socket.close();
+
+    Logger::getInstance().Log(QtMsgType::QtInfoMsg, "Closed connection " + address + ":" + port);
 }
