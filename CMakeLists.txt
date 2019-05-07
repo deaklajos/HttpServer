@@ -14,6 +14,8 @@ add_executable(${PROJECT_NAME}
     "Server.h"
     "ResponseWorker.cpp"
     "ResponseWorker.h"
+    "HttpResponse.cpp"
+    "HttpResponse.h"
     )
 
 target_link_libraries(${PROJECT_NAME} Qt5::Core Qt5::Network)
