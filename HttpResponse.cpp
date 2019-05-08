@@ -4,6 +4,7 @@
 #include "Logger.h"
 
 #define OK_HEADER "HTTP/1.0 200 OK\n\n"
+#define ERROR_BAD_REQUEST "HTTP/1.0 400 Bad Request\n\n<html>400 Bad Request</html>"
 #define ERROR_NOT_FOUND "HTTP/1.0 404 Not Found\n\n<html>404 Not Found</html>"
 #define ERROR_NOT_IMPLEMENTED "HTTP/1.0 501 Not Implemented\n\n<html>501 Not Implemented</html>"
 #define ERROR_INTERNAL_SERVER_ERROR "HTTP/1.0 500 Internal Server Error\n\n<html>500 Internal Server Error</html>"
@@ -21,7 +22,14 @@ HttpResponse HttpResponse::fromRequest(const QByteArray& request)
 
 
     QStringList list = requestString.split(QRegExp("\\s+"), QString::SkipEmptyParts);
+    if(list.count() < 2 || list[1].length() < 1)
+    {
+        Logger::getInstance().Log(QtMsgType::QtWarningMsg, "Bad request encountered.");
+        return HttpResponse(QString(ERROR_BAD_REQUEST).toUtf8());
+    }
+
     QString resourceLocation = list[1].remove(0, 1);
+
 
     if(resourceLocation.isEmpty())
             resourceLocation = "index.html";
