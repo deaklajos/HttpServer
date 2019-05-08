@@ -10,7 +10,7 @@
 
 HttpResponse::HttpResponse(QByteArray data): data(data) {}
 
-HttpResponse HttpResponse::fromRequest(QByteArray request)
+HttpResponse HttpResponse::fromRequest(const QByteArray& request)
 {
     QString requestString(request);
     if(!requestString.contains("GET"))

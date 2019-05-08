@@ -7,7 +7,7 @@
 class HttpResponse
 {
 public:
-    static HttpResponse fromRequest(QByteArray request);
+    static HttpResponse fromRequest(const QByteArray& request);
     QByteArray getByteArray();
 
 private:
