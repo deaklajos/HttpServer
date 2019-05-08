@@ -14,18 +14,18 @@ HttpResponse::HttpResponse(QByteArray data): data(data) {}
 HttpResponse HttpResponse::fromRequest(const QByteArray& request)
 {
     QString requestString(request);
-    if(!requestString.contains("GET"))
-    {
-        Logger::getInstance().Log(QtMsgType::QtWarningMsg, "Non GET request encountered.");
-        return HttpResponse(QString(ERROR_NOT_IMPLEMENTED).toUtf8());
-    }
-
-
     QStringList list = requestString.split(QRegExp("\\s+"), QString::SkipEmptyParts);
+
     if(list.count() < 2 || list[1].length() < 1)
     {
         Logger::getInstance().Log(QtMsgType::QtWarningMsg, "Bad request encountered.");
         return HttpResponse(QString(ERROR_BAD_REQUEST).toUtf8());
+    }
+
+    if(QString("GET") != list[0])
+    {
+        Logger::getInstance().Log(QtMsgType::QtWarningMsg, "Non GET request encountered.");
+        return HttpResponse(QString(ERROR_NOT_IMPLEMENTED).toUtf8());
     }
 
     QString resourceLocation = list[1].remove(0, 1);
