@@ -22,10 +22,17 @@ HttpResponse HttpResponse::fromRequest(const QByteArray& request)
 
     QStringList list = requestString.split(QRegExp("\\s+"), QString::SkipEmptyParts);
     QString resourceLocation = list[1].remove(0, 1);
-    if(resourceLocation.isEmpty())
-        resourceLocation = "index.html";
 
-    Logger::getInstance().Log(QtMsgType::QtInfoMsg, "Requested resource: " + resourceLocation);
+    if(resourceLocation.isEmpty())
+            resourceLocation = "index.html";
+
+    if(resourceLocation.endsWith(".log"))
+    {
+        resourceLocation = "";
+        Logger::getInstance().Log(QtMsgType::QtCriticalMsg, "Log file was requested!");
+    }
+    else
+        Logger::getInstance().Log(QtMsgType::QtInfoMsg, "Requested resource: " + resourceLocation);
 
     QFile file(resourceLocation);
     if(file.exists())
