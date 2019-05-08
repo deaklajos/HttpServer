@@ -8,7 +8,10 @@ Server::Server(QObject *parent) :
     QTcpServer(parent)
 {
     pool = new QThreadPool(this);
+    // TODO use parameter
     pool->setMaxThreadCount(5);
+
+    timer.start();
 }
 
 void Server::startServer()
@@ -35,12 +38,34 @@ void Server::startServer()
 
 void Server::incomingConnection(qintptr handle)
 {
-    // 1. QTcpServer gets a new connection request from a client.
-    // 2. It makes a task (runnable) here.
-    // 3. Then, the server grabs one of the threads.
-    // 4. The server throws the runnable to the thread.
+    connectionCounter++;
+    qint64 time = timer.elapsed();
 
-    // Note: Rannable is a task not a thread
+    if(time > 1000)
+    {
+        connectionCounter = 0;
+        timer.restart();
+    }
+    else
+    {
+        // TODO use parameter
+        if(connectionCounter > 100)
+        {
+            QTcpSocket socket;
+            socket.setSocketDescriptor(handle);
+            // Without wait TCP RST is sent
+            socket.waitForReadyRead();
+            socket.write("HTTP/1.0 503 Service Unavailable\n\n"
+                         "<html><h1>503 Service Unavailable</h1>\n"
+                         "The server cannot handle the request because it is overloaded.</html>");
+            socket.flush();
+            socket.waitForBytesWritten();
+            socket.close();
+            Logger::getInstance().Log(QtMsgType::QtWarningMsg, "Server overloaded, connection refused.");
+            return;
+        }
+    }
+
     ResponseWorker *task = new ResponseWorker();
     task->setAutoDelete(true);
 

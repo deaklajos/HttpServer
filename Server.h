@@ -4,6 +4,7 @@
 #include <QTcpServer>
 #include <QThreadPool>
 #include <QDebug>
+#include <QElapsedTimer>
 
 class Server : public QTcpServer
 {
@@ -21,6 +22,8 @@ public slots:
 
 private:
     QThreadPool *pool;
+    QElapsedTimer timer;
+    qlonglong connectionCounter = 0;
 };
 
 #endif
