@@ -1,4 +1,6 @@
 #include <QNetworkInterface>
+#include <QCoreApplication>
+#include <unistd.h>
 
 #include "Server.h"
 #include "ResponseWorker.h"
@@ -14,26 +16,36 @@ Server::Server(QObject *parent) :
     timer.start();
 }
 
-void Server::startServer()
+int Server::startServer()
 {
-    const qint16 port = 1234;
+    // Check for root privileges.
+    if (geteuid())
+    {
+        Logger::getInstance().Log(QtMsgType::QtFatalMsg, "To start the server, you must be root!");
+        return -1;
+    }
+
+    const qint16 port = 80;
     if(this->listen(QHostAddress::Any, port))
     {
-
         QString addressString;
         const QHostAddress &localhost = QHostAddress(QHostAddress::LocalHost);
+        // TODO check if no address, or widen the printed range.
         for (const QHostAddress &address: QNetworkInterface::allAddresses()) {
             if (address.protocol() == QAbstractSocket::IPv4Protocol && address != localhost)
-                 addressString += ("," + address.toString() + ":" + QString::number(port));
+                 addressString += (", " + address.toString() + ":" + QString::number(port));
         }
 
-        addressString.remove(0, 1);
+        addressString.remove(0, 2);
         Logger::getInstance().Log(QtMsgType::QtInfoMsg, "Server started started " + addressString);
     }
     else
     {
         Logger::getInstance().Log(QtMsgType::QtFatalMsg, "Server could not be started. Reason : " + this->errorString());
+        return -1;
     }
+
+    return 0;
 }
 
 void Server::incomingConnection(qintptr handle)
