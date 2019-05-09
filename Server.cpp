@@ -18,14 +18,38 @@ Server::Server(QObject *parent) :
 
 int Server::startServer()
 {
-    // Check for root privileges.
-    if (geteuid())
-    {
-        Logger::getInstance().Log(QtMsgType::QtFatalMsg, "To start the server, you must be root!");
-        return -1;
-    }
+//    auto ruid = getuid();
+//    auto euid = geteuid();
+//    Logger::getInstance().Log(QtMsgType::QtFatalMsg, QString("uid: %1, euid: %2").arg(ruid).arg(euid));
+//    seteuid(1000);
+//    setuid(1000);
+//    ruid = getuid();
+//    euid = geteuid();
+//    Logger::getInstance().Log(QtMsgType::QtFatalMsg, QString("uid: %1, euid: %2").arg(ruid).arg(euid));
+//    seteuid(0);
+//    setuid(0);
+//    ruid = getuid();
+//    euid = geteuid();
+//    Logger::getInstance().Log(QtMsgType::QtFatalMsg, QString("uid: %1, euid: %2").arg(ruid).arg(euid));
+//    return -1;
 
-    const qint16 port = 80;
+    // Check for sudo
+//    if (geteuid())
+//    {
+//        Logger::getInstance().Log(QtMsgType::QtFatalMsg, "Start the server with sudo!");
+//        return -1;
+//    }
+
+//    auto uid = getuid();
+//    if (!uid)
+//    {
+//        Logger::getInstance().Log(
+//                    QtMsgType::QtFatalMsg,
+//                    "You must start the server as the as the designated user wich sould not be root!");
+//        return -1;
+//    }
+
+    const qint16 port = 1234;
     if(this->listen(QHostAddress::Any, port))
     {
         QString addressString;
@@ -67,6 +91,7 @@ void Server::incomingConnection(qintptr handle)
             socket.setSocketDescriptor(handle);
             // Without wait TCP RST is sent
             socket.waitForReadyRead();
+            // TODO refuse this elsewhere?
             socket.write("HTTP/1.0 503 Service Unavailable\n\n"
                          "<html><h1>503 Service Unavailable</h1>\n"
                          "The server cannot handle the request because it is overloaded.</html>");
