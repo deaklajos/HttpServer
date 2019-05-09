@@ -14,7 +14,7 @@ public:
     static HttpResponse notImplemented(bool withBody);
     static HttpResponse serviceUnavailabe(bool withBody);
 
-    QByteArray getByteArray();
+    const QByteArray& getByteArray() const;
 
 private:
     HttpResponse(const QByteArray& data);

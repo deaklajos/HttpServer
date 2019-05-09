@@ -165,7 +165,7 @@ HttpResponse HttpResponse::serviceUnavailabe(bool withBody)
     return HttpResponse(response.toUtf8());
 }
 
-QByteArray HttpResponse::getByteArray()
+const QByteArray& HttpResponse::getByteArray() const
 {
     return data;
 }
