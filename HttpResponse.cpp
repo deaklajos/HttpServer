@@ -29,7 +29,8 @@ HttpResponse HttpResponse::fromRequest(const QByteArray& request)
                                 ).arg(strlen(BAD_REQUEST_BODY)).toUtf8());
     }
 
-    if(QString("GET") != list[0])
+    bool isHead = QString("HEAD") == list[0];
+    if(QString("GET") != list[0] && !isHead)
     {
         Logger::getInstance().Log(QtMsgType::QtWarningMsg, "Non GET request encountered.");
         return HttpResponse(QString(
@@ -38,8 +39,8 @@ HttpResponse HttpResponse::fromRequest(const QByteArray& request)
                                 ).arg(strlen(NOT_IMPLEMENTED_BODY)).toUtf8());
     }
 
+    // TODO mybe not essential after chroot
     QString resourceLocation = list[1].remove(0, 1);
-
 
     if(resourceLocation.isEmpty())
             resourceLocation = "index.html";
@@ -57,17 +58,32 @@ HttpResponse HttpResponse::fromRequest(const QByteArray& request)
     {
         if(file.open(QIODevice::ReadOnly))
         {
-            QByteArray content = file.readAll();
-            QByteArray response = QString(OK_HEADER).arg(content.size()).toUtf8();
-            response.append(content);
+            QByteArray response;
+            if(isHead)
+                response = QString(OK_HEADER).arg(file.size()).toUtf8();
+            else
+            {
+                QByteArray content = file.readAll();
+                response = QString(OK_HEADER).arg(content.size()).toUtf8();
+                response.append(content);
+            }
+
             return HttpResponse(response);
         }
         else
         {
-            QString response = QString(
+            QString response;
+            if(isHead)
+                response = QString(
+                            INTERNAL_SERVER_ERROR_HEADER
+                            ).arg(0);
+            else
+            {
+                response = QString(
                             INTERNAL_SERVER_ERROR_HEADER
                             INTERNAL_SERVER_ERROR_BODY
                             ).arg(strlen(INTERNAL_SERVER_ERROR_BODY));
+            }
 
             Logger::getInstance().Log(QtMsgType::QtCriticalMsg, "Could not open resource.");
             return HttpResponse(response.toUtf8());
@@ -76,10 +92,18 @@ HttpResponse HttpResponse::fromRequest(const QByteArray& request)
     }
     else
     {
-        QString response = QString(
+        QString response;
+        if(isHead)
+            response = QString(
+                        NOT_FOUND_HEADER
+                        ).arg(0);
+        else
+        {
+            response = QString(
                         NOT_FOUND_HEADER
                         NOT_FOUND_BODY
                         ).arg(strlen(NOT_FOUND_BODY));
+        }
 
         Logger::getInstance().Log(QtMsgType::QtWarningMsg, "Resource could not be found.");
         return HttpResponse(response.toUtf8());
