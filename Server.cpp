@@ -5,6 +5,7 @@
 #include "Server.h"
 #include "ResponseWorker.h"
 #include "Logger.h"
+#include "HttpResponse.h"
 
 Server::Server(QObject *parent) :
     QTcpServer(parent)
@@ -90,11 +91,10 @@ void Server::incomingConnection(qintptr handle)
             QTcpSocket socket;
             socket.setSocketDescriptor(handle);
             // Without wait TCP RST is sent
+            // TODO Add timeout and handle in thread
             socket.waitForReadyRead();
             // TODO refuse this elsewhere?
-            socket.write("HTTP/1.0 503 Service Unavailable\n\n"
-                         "<html><h1>503 Service Unavailable</h1>\n"
-                         "The server cannot handle the request because it is overloaded.</html>");
+            socket.write(HttpResponse::serviceUnavailabe(true).getByteArray());
             socket.flush();
             socket.waitForBytesWritten();
             socket.close();
