@@ -22,40 +22,41 @@ int Server::startServer()
 {
     if(checkPHPInstalled()) return -1;
 
-//    auto ruid = getuid();
-//    auto euid = geteuid();
-//    Logger::getInstance().Log(QtMsgType::QtFatalMsg, QString("uid: %1, euid: %2").arg(ruid).arg(euid));
-//    seteuid(1000);
-//    setuid(1000);
-//    ruid = getuid();
-//    euid = geteuid();
-//    Logger::getInstance().Log(QtMsgType::QtFatalMsg, QString("uid: %1, euid: %2").arg(ruid).arg(euid));
-//    seteuid(0);
-//    setuid(0);
-//    ruid = getuid();
-//    euid = geteuid();
-//    Logger::getInstance().Log(QtMsgType::QtFatalMsg, QString("uid: %1, euid: %2").arg(ruid).arg(euid));
-//    return -1;
+    auto ruid = getuid();
+    auto euid = geteuid();
+    auto rgid = getgid();
+    auto egid = getegid();
 
-    // Check for sudo
-//    if (geteuid())
-//    {
-//        Logger::getInstance().Log(QtMsgType::QtFatalMsg, "Start the server with sudo!");
-//        return -1;
-//    }
+    if(ruid == 0 || rgid == 0)
+    {
+        Logger::getInstance().Log(
+                    QtMsgType::QtFatalMsg,
+                    QString("Do not run this app as root!"));
+        return -1;
+    }
+    if(euid != 0 || egid != 0)
+    {
+        Logger::getInstance().Log(
+                    QtMsgType::QtFatalMsg,
+                    QString("Install with \"make install\" that way permissions will be set up properly!"));
+        return -1;
+    }
 
-//    auto uid = getuid();
-//    if (!uid)
-//    {
-//        Logger::getInstance().Log(
-//                    QtMsgType::QtFatalMsg,
-//                    "You must start the server as the as the designated user wich sould not be root!");
-//        return -1;
-//    }
-
-    const qint16 port = 1234;
+    const qint16 port = 80;
     if(this->listen(QHostAddress::Any, port))
     {
+        int userNotDropped = seteuid(ruid);
+        int groupNotDropped = setegid(rgid);
+        if(userNotDropped || groupNotDropped)
+        {
+            Logger::getInstance().Log(QtMsgType::QtFatalMsg, "Privileges could not be dropped, terminating!");
+            return -1;
+        }
+        auto xeuid = geteuid();
+        auto xegid = getegid();
+        Logger::getInstance().Log(QtMsgType::QtInfoMsg,
+                                  QString("Privileges dropped, euid = %1, egid = %2").arg(xeuid).arg(xegid));
+
         QString addressString;
         const QHostAddress &localhost = QHostAddress(QHostAddress::LocalHost);
         // TODO check if no address, or widen the printed range.
