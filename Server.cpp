@@ -20,34 +20,7 @@ Server::Server(QObject *parent) :
 
 int Server::startServer()
 {
-    QProcess process;
-    process.setProcessChannelMode(QProcess::MergedChannels);
-    process.start("php", QStringList() << "-i");
-    process.waitForStarted();
-    process.waitForFinished();
-
-    if(process.exitCode() != 0)
-    {
-        Logger::getInstance().Log(
-                    QtMsgType::QtInfoMsg,
-                    "php package could not be found, please install it with \"apt get install php\"");
-        return -1;
-    }
-
-    QString result = QString(process.readAllStandardOutput());
-    if(!result.contains("PHP Version"))
-    {
-        Logger::getInstance().Log(QtMsgType::QtFatalMsg,
-                                  "Error while checking php version.");
-        return -1;
-    }
-
-    int indexBegin = result.indexOf("PHP Version");
-    int indexEnd = result.indexOf("\n", indexBegin);
-    QString versionString = result.mid(indexBegin, indexEnd - indexBegin);
-    Logger::getInstance().Log(QtMsgType::QtInfoMsg, "php package found, details: " + versionString);
-
-
+    if(checkPHPInstalled()) return -1;
 
 //    auto ruid = getuid();
 //    auto euid = geteuid();
@@ -139,4 +112,36 @@ void Server::incomingConnection(qintptr handle)
     task->socketDescriptor = handle;
 
     pool->start(task);
+}
+
+int Server::checkPHPInstalled() const
+{
+    QProcess process;
+    process.setProcessChannelMode(QProcess::MergedChannels);
+    process.start("php", QStringList() << "-i");
+    process.waitForStarted();
+    process.waitForFinished();
+
+    if(process.exitCode() != 0)
+    {
+        Logger::getInstance().Log(
+                    QtMsgType::QtInfoMsg,
+                    "php package could not be found, please install it with \"apt get install php\"");
+        return -1;
+    }
+
+    QString result = QString(process.readAllStandardOutput());
+    if(!result.contains("PHP Version"))
+    {
+        Logger::getInstance().Log(QtMsgType::QtFatalMsg,
+                                  "Error while checking php version.");
+        return -1;
+    }
+
+    int indexBegin = result.indexOf("PHP Version");
+    int indexEnd = result.indexOf("\n", indexBegin);
+    QString versionString = result.mid(indexBegin, indexEnd - indexBegin);
+    Logger::getInstance().Log(QtMsgType::QtInfoMsg, "php package found, details: " + versionString);
+
+    return 0;
 }

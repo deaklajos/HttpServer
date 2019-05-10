@@ -24,6 +24,8 @@ private:
     QThreadPool *pool;
     QElapsedTimer timer;
     qlonglong connectionCounter = 0;
+
+    int checkPHPInstalled() const;
 };
 
 #endif
