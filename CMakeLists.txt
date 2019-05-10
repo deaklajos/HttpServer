@@ -21,3 +21,6 @@ add_executable(${PROJECT_NAME}
     )
 
 target_link_libraries(${PROJECT_NAME} Qt5::Core Qt5::Network)
+
+install (TARGETS ${PROJECT_NAME} DESTINATION bin)
+#install(CODE "execute_process(COMMAND chmod 700 ${CMAKE_INSTALL_PREFIX}/bin/${PROJECT_NAME})")
