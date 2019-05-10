@@ -1,4 +1,5 @@
 #include <QNetworkInterface>
+#include <QProcess>
 
 #include "HttpResponse.h"
 #include "Logger.h"
@@ -22,6 +23,7 @@ HttpResponse::HttpResponse(const QByteArray& data): data(data) {}
 HttpResponse HttpResponse::fromRequest(const QByteArray& request)
 {
     QString requestString(request);
+    // TODO rename list to something more appropriate
     QStringList list = requestString.split(QRegExp("\\s+"), QString::SkipEmptyParts);
 
     if(list.count() < 2 || list[1].length() < 1)
@@ -30,13 +32,16 @@ HttpResponse HttpResponse::fromRequest(const QByteArray& request)
         return badRequest(true);
     }
 
+    // TODO tidy up this if(bool) mess!!!
+    bool isPost = QString("POST") == list[0];
     bool isHead = QString("HEAD") == list[0];
-    if(QString("GET") != list[0] && !isHead)
+    if(QString("GET") != list[0] && !isHead && !isPost)
     {
         Logger::getInstance().Log(QtMsgType::QtWarningMsg, "Non implemented request encountered.");
         return notImplemented(true);
     }
 
+    // TODO rename to resourceURI
     // TODO maybe not essential after chroot
     QString resourceLocation = list[1].remove(0, 1);
 
@@ -54,6 +59,12 @@ HttpResponse HttpResponse::fromRequest(const QByteArray& request)
     QFile file(resourceLocation);
     if(file.exists())
     {
+        if(isPost)
+        {
+            QString body = list.back();
+            return fromPHP(resourceLocation, body);
+        }
+
         if(file.open(QIODevice::ReadOnly))
         {
             QByteArray response;
@@ -82,6 +93,33 @@ HttpResponse HttpResponse::fromRequest(const QByteArray& request)
     }
 }
 
+HttpResponse HttpResponse::fromPHP(const QString& scriptURI, const QString& parameterString)
+{
+    QString program = "php";
+    QStringList arguments;
+    arguments << "-r" << QString(
+                     "parse_str(\"%1\", $_POST); include \"%2\";"
+                     ).arg(parameterString, scriptURI);
+
+    QProcess process;
+    process.setProcessChannelMode(QProcess::MergedChannels);
+    process.start(program, arguments);
+    process.waitForStarted();
+    process.waitForFinished();
+    if(process.exitCode() == 0)
+    {
+        QByteArray result = process.readAllStandardOutput();
+        return HttpResponse(result);
+    }
+    else
+    {
+        QByteArray error = process.readAllStandardOutput();
+        Logger::getInstance().Log(QtMsgType::QtWarningMsg, "PHP execution failed, reason: " + QString(error));
+        // TODO maybe internal error
+        return badRequest(true);
+    }
+}
+
 HttpResponse HttpResponse::badRequest(bool withBody)
 {
     QString response;
@@ -95,7 +133,6 @@ HttpResponse HttpResponse::badRequest(bool withBody)
                     BAD_REQUEST_HEADER
                     ).arg(0);
 
-    Logger::getInstance().Log(QtMsgType::QtWarningMsg, "Bad request encountered.");
     return HttpResponse(response.toUtf8());
 }
 
