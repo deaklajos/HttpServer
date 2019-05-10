@@ -1,5 +1,6 @@
 #include <QNetworkInterface>
 #include <QCoreApplication>
+#include <QProcess>
 #include <unistd.h>
 
 #include "Server.h"
@@ -19,6 +20,35 @@ Server::Server(QObject *parent) :
 
 int Server::startServer()
 {
+    QProcess process;
+    process.setProcessChannelMode(QProcess::MergedChannels);
+    process.start("php", QStringList() << "-i");
+    process.waitForStarted();
+    process.waitForFinished();
+
+    if(process.exitCode() != 0)
+    {
+        Logger::getInstance().Log(
+                    QtMsgType::QtInfoMsg,
+                    "php package could not be found, please install it with \"apt get install php\"");
+        return -1;
+    }
+
+    QString result = QString(process.readAllStandardOutput());
+    if(!result.contains("PHP Version"))
+    {
+        Logger::getInstance().Log(QtMsgType::QtFatalMsg,
+                                  "Error while checking php version.");
+        return -1;
+    }
+
+    int indexBegin = result.indexOf("PHP Version");
+    int indexEnd = result.indexOf("\n", indexBegin);
+    QString versionString = result.mid(indexBegin, indexEnd - indexBegin);
+    Logger::getInstance().Log(QtMsgType::QtInfoMsg, "php package found, details: " + versionString);
+
+
+
 //    auto ruid = getuid();
 //    auto euid = geteuid();
 //    Logger::getInstance().Log(QtMsgType::QtFatalMsg, QString("uid: %1, euid: %2").arg(ruid).arg(euid));
