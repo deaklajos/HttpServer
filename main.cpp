@@ -1,4 +1,5 @@
 #include <QCoreApplication>
+#include <iostream>
 
 #include "Server.h"
 #include <libconfig.h++>
@@ -9,6 +10,13 @@ int main(int argc, char *argv[])
 {
     QCoreApplication::setSetuidAllowed(true);
     QCoreApplication a(argc, argv);
+
+    std::cout << "Are you sure that you want to host a server from here(y/n)?" << std::endl;
+    std::cout << "chroot jail will be created here containing php and its dependecies!" << std::endl;
+    char answer;
+    std::cin >> answer;
+    if(answer != 'y')
+        return 0;
 
     if(argc < 2)
     {
