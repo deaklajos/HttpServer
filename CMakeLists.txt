@@ -5,8 +5,9 @@ project(HttpServer)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
+# TODO make theese required?
 find_package(Qt5Core)
 find_package(Qt5Network)
 find_package(Config)
@@ -33,3 +34,7 @@ install (TARGETS ${PROJECT_NAME} DESTINATION bin)
 set(INSTALLED_EXECUTABLE ${CMAKE_INSTALL_PREFIX}/bin/${PROJECT_NAME})
 install(CODE "execute_process(COMMAND chown root ${INSTALLED_EXECUTABLE})")
 install(CODE "execute_process(COMMAND chmod 6555 ${INSTALLED_EXECUTABLE})")
+set(JAIL_SCRIPT "create_php_jail.sh")
+set(INSTALLED_SCRIPT ${CMAKE_INSTALL_PREFIX}/bin/${JAIL_SCRIPT})
+install(FILES ${PROJECT_SOURCE_DIR}/${JAIL_SCRIPT} DESTINATION bin)
+install(CODE "execute_process(COMMAND chmod 555 ${INSTALLED_SCRIPT})")
