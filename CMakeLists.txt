@@ -5,8 +5,15 @@ project(HttpServer)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+
 find_package(Qt5Core)
 find_package(Qt5Network)
+find_package(Config)
+if(NOT CONFIG++_FOUND)
+    message( FATAL_ERROR "Install libconfig with \"apt-get install libconfig++-dev\"." )
+endif()
+
 
 add_executable(${PROJECT_NAME}
     "main.cpp"
@@ -20,7 +27,7 @@ add_executable(${PROJECT_NAME}
     "Logger.h"
     )
 
-target_link_libraries(${PROJECT_NAME} Qt5::Core Qt5::Network)
+target_link_libraries(${PROJECT_NAME} Qt5::Core Qt5::Network config++)
 
 install (TARGETS ${PROJECT_NAME} DESTINATION bin)
 set(INSTALLED_EXECUTABLE ${CMAKE_INSTALL_PREFIX}/bin/${PROJECT_NAME})
