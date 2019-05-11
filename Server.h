@@ -33,6 +33,7 @@ private:
     qint16 port;
 
     int checkPHPInstalled() const;
+    int CreateJailWithPHP() const;
 };
 
 #endif

@@ -26,8 +26,6 @@ Server::Server(qint16 port,
 
 int Server::startServer()
 {
-    if(checkPHPInstalled()) return -1;
-
     auto ruid = getuid();
     auto euid = geteuid();
     auto rgid = getgid();
@@ -47,6 +45,8 @@ int Server::startServer()
                     QString("Install with \"make install\" that way permissions will be set up properly!"));
         return -1;
     }
+
+    if(CreateJailWithPHP()) return -1;
 
     if(this->listen(QHostAddress::Any, port))
     {
@@ -130,7 +130,7 @@ int Server::checkPHPInstalled() const
     if(process.exitCode() != 0)
     {
         Logger::getInstance().Log(
-                    QtMsgType::QtInfoMsg,
+                    QtMsgType::QtFatalMsg,
                     "php package could not be found, please install it with \"apt get install php\"");
         return -1;
     }
@@ -147,6 +147,43 @@ int Server::checkPHPInstalled() const
     int indexEnd = result.indexOf("\n", indexBegin);
     QString versionString = result.mid(indexBegin, indexEnd - indexBegin);
     Logger::getInstance().Log(QtMsgType::QtInfoMsg, "php package found, details: " + versionString);
+
+    return 0;
+}
+
+int Server::CreateJailWithPHP() const
+{
+    if(checkPHPInstalled()) return -1;
+
+    QProcess process;
+    process.setProcessChannelMode(QProcess::MergedChannels);
+    process.start("/bin/bash", QStringList() << "create_php_jail.sh");
+    process.waitForStarted();
+    process.waitForFinished();
+
+    QString stdOut = process.readAllStandardOutput();
+    QString stdErr = process.readAllStandardError();
+    QString err = process.errorString();
+    Logger::getInstance().Log(QtMsgType::QtInfoMsg, "\"create_php_jail.sh\" output: " + stdOut);
+
+    if(process.exitCode() != 0)
+    {
+        Logger::getInstance().Log(
+                    QtMsgType::QtFatalMsg,
+                    "create_php_jail.sh failed, php environment could not be set up, reason: " +
+                    QString("Process error message: %1\nError output: %2").arg(stdErr).arg(err));
+        return -1;
+    }
+
+    if(chroot("."))
+    {
+        Logger::getInstance().Log(
+                    QtMsgType::QtFatalMsg,
+                    "chroot failed");
+        return -1;
+    }
+
+    Logger::getInstance().Log(QtMsgType::QtInfoMsg, "Server locked into current directory");
 
     return 0;
 }
