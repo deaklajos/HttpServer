@@ -1,5 +1,5 @@
-#include <QFile>
 #include <QHostAddress>
+#include <QTcpSocket>
 
 #include "ResponseWorker.h"
 #include "HttpResponse.h"

@@ -1,5 +1,5 @@
-#include <QNetworkInterface>
 #include <QProcess>
+#include <QFile>
 
 #include "HttpResponse.h"
 #include "Logger.h"

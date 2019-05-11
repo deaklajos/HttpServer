@@ -3,7 +3,6 @@
 
 #include <QTcpServer>
 #include <QThreadPool>
-#include <QDebug>
 #include <QElapsedTimer>
 
 class Server : public QTcpServer

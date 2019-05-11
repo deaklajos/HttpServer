@@ -3,7 +3,6 @@
 #include <QDateTime>
 #include <QFile>
 #include <QMutex>
-#include <QTextStream>
 #include <QDebug>
 #include <QThread>
 #include <mutex>

@@ -1,6 +1,6 @@
 #include <QNetworkInterface>
-#include <QCoreApplication>
 #include <QProcess>
+#include <QTcpSocket>
 #include <unistd.h>
 
 #include "Server.h"

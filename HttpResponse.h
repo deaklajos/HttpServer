@@ -2,7 +2,6 @@
 #define HTTPRESPONSE_H
 
 #include <QByteArray>
-#include <QFile>
 
 class HttpResponse
 {
