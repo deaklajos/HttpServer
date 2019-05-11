@@ -8,12 +8,18 @@
 #include "Logger.h"
 #include "HttpResponse.h"
 
-Server::Server(QObject *parent) :
+Server::Server(qint16 port,
+               int maxThreadCount,
+               int maxPendingConnections,
+               int maxResponsePerSecond,
+               QObject *parent) :
+    port(port),
+    maxResponsePerSecond(maxResponsePerSecond),
     QTcpServer(parent)
 {
     pool = new QThreadPool(this);
-    // TODO use parameter
-    pool->setMaxThreadCount(5);
+    pool->setMaxThreadCount(maxThreadCount);
+    this->setMaxPendingConnections(maxPendingConnections);
 
     timer.start();
 }
@@ -42,7 +48,6 @@ int Server::startServer()
         return -1;
     }
 
-    const qint16 port = 80;
     if(this->listen(QHostAddress::Any, port))
     {
         int userNotDropped = seteuid(ruid);
@@ -62,7 +67,7 @@ int Server::startServer()
         // TODO check if no address, or widen the printed range.
         for (const QHostAddress &address: QNetworkInterface::allAddresses()) {
             if (address.protocol() == QAbstractSocket::IPv4Protocol && address != localhost)
-                 addressString += (", " + address.toString() + ":" + QString::number(port));
+                addressString += (", " + address.toString() + ":" + QString::number(port));
         }
 
         addressString.remove(0, 2);
@@ -89,8 +94,7 @@ void Server::incomingConnection(qintptr handle)
     }
     else
     {
-        // TODO use parameter
-        if(connectionCounter > 100)
+        if(connectionCounter > maxResponsePerSecond)
         {
             QTcpSocket socket;
             socket.setSocketDescriptor(handle);

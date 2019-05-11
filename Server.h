@@ -10,7 +10,12 @@ class Server : public QTcpServer
 {
     Q_OBJECT
 public:
-    explicit Server(QObject *parent = 0);
+    explicit Server(qint16 port = 80,
+                    int maxThreadCount = 5,
+                    int maxPendingConnections = 30,
+                    int maxResponsePerSecond = 100,
+                    QObject *parent = 0);
+
     int startServer();
 
 protected:
@@ -24,6 +29,8 @@ private:
     QThreadPool *pool;
     QElapsedTimer timer;
     qlonglong connectionCounter = 0;
+    int maxResponsePerSecond;
+    qint16 port;
 
     int checkPHPInstalled() const;
 };
