@@ -1,4 +1,5 @@
 #!/bin/bash
+# TODO return error if error
 
 J=.
 
