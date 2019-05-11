@@ -48,7 +48,7 @@ HttpResponse HttpResponse::fromRequest(const QByteArray& request)
     if(resourceLocation.isEmpty())
         resourceLocation = "index.html";
 
-    if(resourceLocation.endsWith(".log"), Qt::CaseInsensitive)
+    if(resourceLocation.endsWith(".log", Qt::CaseInsensitive))
     {
         resourceLocation = "";
         Logger::getInstance().Log(QtMsgType::QtCriticalMsg, "Log file requested!");
