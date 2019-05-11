@@ -59,11 +59,17 @@ HttpResponse HttpResponse::fromRequest(const QByteArray& request)
     QFile file(resourceLocation);
     if(file.exists())
     {
-        if(isPost)
+        if(resourceLocation.endsWith(".php", Qt::CaseInsensitive))
         {
-            QString body = list.back();
-            return fromPHP(resourceLocation, body);
+            if(isPost)
+            {
+                QString body = list.back();
+                return fromPHP(resourceLocation, body);
+            }
+            else
+                return fromPHP(resourceLocation, "");
         }
+
 
         if(file.open(QIODevice::ReadOnly))
         {
@@ -101,6 +107,14 @@ HttpResponse HttpResponse::fromPHP(const QString& scriptURI, const QString& para
                      "parse_str(\"%1\", $_POST); include \"%2\";"
                      ).arg(parameterString, scriptURI);
 
+    if(!parameterString.isEmpty()) // POST
+        arguments << QString(
+                         "parse_str(\"%1\", $_POST); include \"%2\";"
+                         ).arg(parameterString, scriptURI);
+    else // GET
+        arguments << QString("include \"%1\";").arg(scriptURI);
+
+
     QProcess process;
     process.setProcessChannelMode(QProcess::MergedChannels);
     process.start(program, arguments);
@@ -108,8 +122,10 @@ HttpResponse HttpResponse::fromPHP(const QString& scriptURI, const QString& para
     process.waitForFinished();
     if(process.exitCode() == 0)
     {
-        QByteArray result = process.readAllStandardOutput();
-        return HttpResponse(result);
+        QByteArray content = process.readAllStandardOutput();
+        QByteArray response = QString(OK_HEADER).arg(content.size()).toUtf8();
+        response.append(content);
+        return HttpResponse(response);
     }
     else
     {
