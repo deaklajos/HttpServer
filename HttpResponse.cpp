@@ -70,7 +70,6 @@ HttpResponse HttpResponse::fromRequest(const QByteArray& request)
                 return fromPHP(resourceLocation, "");
         }
 
-
         if(file.open(QIODevice::ReadOnly))
         {
             QByteArray response;
@@ -113,7 +112,6 @@ HttpResponse HttpResponse::fromPHP(const QString& scriptURI, const QString& para
                          ).arg(parameterString, scriptURI);
     else // GET
         arguments << QString("include \"%1\";").arg(scriptURI);
-
 
     QProcess process;
     process.setProcessChannelMode(QProcess::MergedChannels);
