@@ -41,33 +41,31 @@ HttpResponse HttpResponse::fromRequest(const QByteArray& request)
         return notImplemented(true);
     }
 
-    // TODO rename to resourceURI
-    // TODO maybe not essential after chroot
-    QString resourceLocation = list[1].remove(0, 1);
+    QString resourceURI = list[1];
 
-    if(resourceLocation.isEmpty())
-        resourceLocation = "index.html";
+    if(resourceURI == "/")
+        resourceURI = "/index.html";
 
-    if(resourceLocation.endsWith(".log", Qt::CaseInsensitive))
+    if(resourceURI.endsWith(".log", Qt::CaseInsensitive))
     {
-        resourceLocation = "";
+        resourceURI = "";
         Logger::getInstance().Log(QtMsgType::QtCriticalMsg, "Log file requested!");
     }
     else
-        Logger::getInstance().Log(QtMsgType::QtInfoMsg, "Requested resource: " + resourceLocation);
+        Logger::getInstance().Log(QtMsgType::QtInfoMsg, "Requested resource: " + resourceURI);
 
-    QFile file(resourceLocation);
+    QFile file(resourceURI);
     if(file.exists())
     {
-        if(resourceLocation.endsWith(".php", Qt::CaseInsensitive))
+        if(resourceURI.endsWith(".php", Qt::CaseInsensitive))
         {
             if(isPost)
             {
                 QString body = list.back();
-                return fromPHP(resourceLocation, body);
+                return fromPHP(resourceURI, body);
             }
             else
-                return fromPHP(resourceLocation, "");
+                return fromPHP(resourceURI, "");
         }
 
         if(file.open(QIODevice::ReadOnly))
