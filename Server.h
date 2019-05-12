@@ -55,7 +55,7 @@ protected:
      * Starts the handling of a request on another thread.
      * @param socketDescriptor Native socket descriptor for the accepted connection.
      */
-    void incomingConnection(qintptr socketDescriptor);
+    void incomingConnection(qintptr socketDescriptor) override;
 
 signals:
 

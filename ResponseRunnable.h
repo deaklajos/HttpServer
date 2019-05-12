@@ -25,7 +25,7 @@ protected:
      * If the client will not provide readable data in 500 milliseconds the
      * connection is closed.
      */
-    void run();
+    void run() override;
 
 public:
     /**
