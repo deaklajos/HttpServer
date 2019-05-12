@@ -7,7 +7,7 @@ set(CMAKE_AUTOMOC ON)
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
-# TODO make theese required?
+# TODO make these required?
 find_package(Qt5Core)
 find_package(Qt5Network)
 find_package(Config)
@@ -20,8 +20,8 @@ add_executable(${PROJECT_NAME}
     "main.cpp"
     "Server.cpp"
     "Server.h"
-    "ResponseWorker.cpp"
-    "ResponseWorker.h"
+    "ResponseRunnable.cpp"
+    "ResponseRunnable.h"
     "HttpResponse.cpp"
     "HttpResponse.h"
     "Logger.cpp"

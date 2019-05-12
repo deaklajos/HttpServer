@@ -4,7 +4,7 @@
 #include <unistd.h>
 
 #include "Server.h"
-#include "ResponseWorker.h"
+#include "ResponseRunnable.h"
 #include "Logger.h"
 #include "HttpResponse.h"
 
@@ -111,7 +111,7 @@ void Server::incomingConnection(qintptr socketDescriptor)
         }
     }
 
-    ResponseWorker *task = new ResponseWorker();
+    ResponseRunnable *task = new ResponseRunnable();
     task->setAutoDelete(true);
 
     task->socketDescriptor = socketDescriptor;

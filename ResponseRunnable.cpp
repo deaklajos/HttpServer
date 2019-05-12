@@ -1,15 +1,15 @@
 #include <QHostAddress>
 #include <QTcpSocket>
 
-#include "ResponseWorker.h"
+#include "ResponseRunnable.h"
 #include "HttpResponse.h"
 #include "Logger.h"
 
-ResponseWorker::ResponseWorker()
+ResponseRunnable::ResponseRunnable()
 {
 }
 
-void ResponseWorker::run()
+void ResponseRunnable::run()
 {
     if(!socketDescriptor) return;
 
