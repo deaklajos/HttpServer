@@ -5,20 +5,57 @@
 #include <QThreadPool>
 #include <QElapsedTimer>
 
+/**
+ * @brief HTTP server implementation.
+ *
+ * Privilege handling:
+ * The following commands should be executed on the executable using this class:
+ * chown root [name_of_executable]
+ * chmod 6555 [name_of_executable]
+ * The reason behind theese extra modifications is that the server needs to run
+ * with ruid = not_root_user_id, rgid = not_root_group_id, euid = root_user_id,
+ * egid = root_group_id so that listen can be called on protected ports and
+ * chroot can be called to create a jail for the process.
+ * After theese procedures the privileges will be dropped.
+ */
 class Server : public QTcpServer
 {
     Q_OBJECT
 public:
+    /**
+     * @brief Constructs a Server object.
+     * @param port Port number where the server will listen.
+     * @param maxThreadCount Maximum size of the threadpool that serves requests.
+     * @param maxPendingConnections Maximum number of requests waiting in the queue.
+     * @param maxResponsePerSecond Maximum number of responses made in one second.
+     * @param parent Passed to the QObject constructor.
+     */
     explicit Server(qint16 port = 80,
                     int maxThreadCount = 5,
                     int maxPendingConnections = 30,
                     int maxResponsePerSecond = 100,
                     QObject *parent = 0);
 
+    /**
+     * @brief Starts the server.
+     *
+     * Checks if the privileges are correct.
+     * Checks for the php package.
+     * Creates the environment for the server.
+     * Starts listening on all network interfaces using the designated port.
+     * @return Returns 0 if successful, othervise not 0.
+     */
     int startServer();
 
 protected:
-    void incomingConnection( qintptr handle );
+    /**
+     * @brief Handels the incoming requests.
+     *
+     * Overrides QTcpServer::incomingConnection().
+     * Starts the handling of a request on another thread.
+     * @param socketDescriptor Native socket descriptor for the accepted connection.
+     */
+    void incomingConnection(qintptr socketDescriptor);
 
 signals:
 

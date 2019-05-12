@@ -82,7 +82,7 @@ int Server::startServer()
     return 0;
 }
 
-void Server::incomingConnection(qintptr handle)
+void Server::incomingConnection(qintptr socketDescriptor)
 {
     connectionCounter++;
     qint64 time = timer.elapsed();
@@ -97,7 +97,7 @@ void Server::incomingConnection(qintptr handle)
         if(connectionCounter > maxResponsePerSecond)
         {
             QTcpSocket socket;
-            socket.setSocketDescriptor(handle);
+            socket.setSocketDescriptor(socketDescriptor);
             // Without wait TCP RST is sent
             // TODO Add timeout and handle in thread
             socket.waitForReadyRead();
@@ -114,7 +114,7 @@ void Server::incomingConnection(qintptr handle)
     ResponseWorker *task = new ResponseWorker();
     task->setAutoDelete(true);
 
-    task->socketDescriptor = handle;
+    task->socketDescriptor = socketDescriptor;
 
     pool->start(task);
 }
