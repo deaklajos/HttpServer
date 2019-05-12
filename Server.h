@@ -6,17 +6,17 @@
 #include <QElapsedTimer>
 
 /**
- * @brief HTTP server implementation.
+ * @brief HTTP 1.0 server implementation.
  *
  * Privilege handling:<br>
  * The following commands should be executed on the executable using this class:<br>
  * chown root [name_of_executable]<br>
  * chmod 6555 [name_of_executable]<br>
- * The reason behind theese extra modifications is that the server needs to run
+ * The reason behind these extra modifications is that the server needs to run
  * with ruid = not_root_user_id, rgid = not_root_group_id, euid = root_user_id,
  * egid = root_group_id so that listen can be called on protected ports and
  * chroot can be called to create a jail for the process.<br>
- * After theese procedures the privileges will be dropped.
+ * After these procedures the privileges will be dropped.
  */
 class Server : public QTcpServer
 {
@@ -49,7 +49,7 @@ public:
 
 protected:
     /**
-     * @brief Handels the incoming requests.
+     * @brief Handles the incoming requests.
      *
      * Overrides QTcpServer::incomingConnection().<br>
      * Starts the handling of a request on another thread.
