@@ -3,6 +3,7 @@
 
 #include "Server.h"
 #include <libconfig.h++>
+#include "Logger.h"
 
 using namespace libconfig;
 
@@ -39,11 +40,22 @@ int main(int argc, char *argv[])
     catch(const ParseException &pex)
     {
         qDebug() << "Parse error at " << pex.getFile() << ":" << pex.getLine()
-                  << " - " << pex.getError();
+                 << " - " << pex.getError();
         return(EXIT_FAILURE);
     }
 
-    // Get the port number
+    try
+    {
+        QString logLocation = QString::fromStdString(cfg.lookup("log_location"));
+        Logger::getInstance().SetLogLocation(logLocation);
+        Logger::getInstance().Log(QtMsgType::QtInfoMsg, "Log location is set to: " + logLocation);
+    }
+    catch(const SettingNotFoundException &nfex)
+    {
+        qDebug() << "No 'log_location' setting in configuration file.";
+        return(EXIT_FAILURE);
+    }
+
     int port = -1;
     int maxPendingConntection = -1;
     int maxResponsePerSecond = -1;

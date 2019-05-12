@@ -2,10 +2,12 @@
 
 #include <QDateTime>
 #include <QFile>
-#include <QMutex>
 #include <QDebug>
 #include <QThread>
+#include <QMutexLocker>
 #include <mutex>
+
+QMutex Logger::mutex;
 
 void Logger::Log(QtMsgType type, const QString &message)
 {
@@ -34,14 +36,20 @@ void Logger::Log(QtMsgType type, const QString &message)
     QString entryString("%1 [%2] %3: %4");
     entryString = entryString.arg(typeString).arg(threadString).arg(timeString).arg(message);
 
-    static QMutex mutex;
-    static QFile outFile("log.log");
+    static QFile outFile(this->logLocation + "log.log");
     static QTextStream stream(&outFile);
     static std::once_flag flag;
 
-    mutex.lock();
-    std::call_once(flag, [](){ outFile.open(QIODevice::WriteOnly | QIODevice::Append); });
-    stream << entryString << endl;
-    qDebug() << entryString;
-    mutex.unlock();
+    {
+        QMutexLocker locker(&(this->mutex));
+        std::call_once(flag, [](){ outFile.open(QIODevice::WriteOnly | QIODevice::Append); });
+        stream << entryString << endl;
+        qDebug() << entryString;
+    }
+}
+
+void Logger::SetLogLocation(const QString& logLocation)
+{
+    QMutexLocker locker(&(this->mutex));
+    this->logLocation = logLocation;
 }

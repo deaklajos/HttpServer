@@ -2,9 +2,12 @@
 #define LOGGER_H
 
 #include <QString>
+#include <QMutex>
 
 /**
  * @brief Singleton threadsafe class for verbose file logging.
+ *
+ * The name of the log file is log.log.
  */
 class Logger
 {
@@ -32,11 +35,25 @@ public:
      */
     void Log(QtMsgType type, const QString& message);
 
+    /**
+     * @brief Sets the location of the logfile.
+     *
+     * This function is threadsafe.<br>
+     * If the Log() function is invoked before, then this fuction has no effect.<br>
+     * The default location of the log file is "../".
+     * @param logLocation Location of the log file.
+     */
+    void SetLogLocation(const QString& logLocation);
+
 private:
     Logger() {}
 
 public:
     Logger(Logger const&) = delete;
     void operator=(Logger const&) = delete;
+
+private:
+    QString logLocation{"../"};
+    static QMutex mutex;
 };
 #endif
