@@ -46,10 +46,15 @@ HttpResponse HttpResponse::fromRequest(const QByteArray& request)
     if(resourceURI == "/")
         resourceURI = "/index.html";
 
-    if(resourceURI.endsWith(".log", Qt::CaseInsensitive))
+    // blacklist
+    if(resourceURI.endsWith(".log", Qt::CaseInsensitive) ||
+            resourceURI.contains("bin/", Qt::CaseInsensitive) ||
+            resourceURI.contains("lib/", Qt::CaseInsensitive) ||
+            resourceURI.contains("lib64/", Qt::CaseInsensitive) ||
+            resourceURI.contains("usr/", Qt::CaseInsensitive))
     {
         resourceURI = "";
-        Logger::getInstance().Log(QtMsgType::QtCriticalMsg, "Log file requested!");
+        Logger::getInstance().Log(QtMsgType::QtCriticalMsg, "Blacklist resource requested!");
     }
     else
         Logger::getInstance().Log(QtMsgType::QtInfoMsg, "Requested resource: " + resourceURI);
